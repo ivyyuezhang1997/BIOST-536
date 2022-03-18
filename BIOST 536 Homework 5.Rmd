@@ -1,0 +1,49 @@
+---
+title: "BIOST 536 Homework 5"
+author: "Ivy Zhang"
+date: "11/9/2021"
+output: pdf_document
+---
+## Question 1
+
+A. I am planning to use the following regression model: 
+
+$$logit(P[D|V]) = \alpha + \beta_1 \times V$$
+At here, V means the numbers of the copies of the genetic variant. It is a continuous variable from 0 to 2. P[D] means the probability of getting disease. 
+
+B.I am planning to use the following regression model:  
+
+$$logit(P[D|V]) = \alpha + \beta_1 \times V_1 $$
+At here, $V_1$ is an indicator variable that $V_1 = 1$ if the participant has 1 or 2 copies of the genetic variant and equals 0 otherwise. P[D] means the probability of getting disease. 
+
+C. I am planning to use the following regression model: 
+
+$$logit(P[D|V]) = \alpha+ \beta_1 \times V_2$$
+At here, $V_2$ is an indicator variable that $V_2 = 1$ if the participant has 2 copies of the genetic variant and equals 0 otherwise. P[D] means the probability of getting disease. 
+
+D. I think they are all not nested with each other. They are all having same number of parameters. Therefore, they cannot be nested in all 3 possible pairs of models. 
+
+E.
+```{r e, echo = FALSE, results=FALSE,fig.height=5}
+#----------Question 1E--------------
+library(dagR)
+mydag = dag.init(outcome = NULL, exposure = NULL, covs = 1, 
+                 arcs = c(1,-1), x.name = "Variants", y.name = "Disease",
+                 cov.names = c("Sex"),symbols = c("E","S","D"))
+dag.draw(mydag)
+```
+
+F. I may use the model in A. I think model A will give us a more generically picture of whether there is association between the variant and the disease compared to the rest two models. The rest two models need relatively stronger assumption. 
+
+G. I think the sex-adjusted model returned the larger OR. It is due to the non-collapsible of the OR. If sex is not associated with the exposure (which is the number of copies of the genetic variant in this case), the sex-adjusted OR should be attenuated. I believe what is happening is the ORs are similar in the two sex groups and also similar to the sex-adjusted OR, and the OR for pooled is attenuated compared to the sex-specific OR. 
+
+# Question 2
+
+For 313 participants who had presence of chronic low-back pain for 3 months or more without referred pain, had presence of pain while lying in bed or on rising, and fulfilled the inclusion criteria, a randomized, double-blind, controlled, multicentre trial has performed. Participant will be randomly assigned to change to medium-firm mattress or firm mattress, and the change in pain intensity in 90 days will be recorded. Logistic regression model will be used in the statistical analysis to research the association between mattress firmness and reducing back pain. Based on multivariate logistic regression, after adjusting for the important confounders, we estimated that the odds of getting better outcomes for pain in bed for participants who sleeped in medium-firm mattresses for 90 days is 2.36 times (95%CI: 1.13-4.93, p-value:xx) the odds of participants who sleeped in firm mattresses, the odds of better outcome for pain on rising is for participants with medium-firm mattresses is 1.93(95%CI: 1.13-4.93, p-value: xx) times of the odds of participants with firm mattresses, and the odds of better disability outcome for participants with meidum-firm mattresses is 2.10(95%CI: 1.24-3.56, p-value:xx) 2.10 times the odds of participants with firm mattresses. In addition, throughout the study period, the participants with medium-firm mattresses seemed to experience less xx daytime low-back pain(95%CI:XX, p = 0.059), less xx pain while lying in bed (95CI,P = 0.064), and less xx pain on rising (95%CI, p-value) than participants with firm mattresses. In conclusion, sleep in the medium firm mattress for 90 days has higher odds to have better outcome in reducing pain among participants with chronic non-specific low-back pain compared to sleep in the firm mattress.
+
+
+
+## Code Appendix
+
+```{r, ref.label=knitr::all_labels(),echo=TRUE,eval=FALSE}
+```

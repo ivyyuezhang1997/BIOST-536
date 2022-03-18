@@ -1,0 +1,229 @@
+---
+title: "BIOST/EPI 536 Homework 1"
+author: "Ivy Zhang"
+date: "10/5/2021"
+output:
+  html_document:
+    df_print: paged
+---
+```{r setup, message = FALSE}
+#Set up
+
+library(knitr)
+library(table1)
+library(readr)
+leuk = read_csv("leukemia_data.csv")
+```
+
+###Question 1 
+
+```{r q1}
+#Question 1 Table
+leuk$cr = factor(leuk$cr, levels = c("Y","N"), labels = c("Yes","No"))
+leuk$tx = factor(leuk$tx, levels = c("D","I"), labels = c("Daunorubicin","Idarubicin"))
+leuk$sex = factor(leuk$sex, levels=c("M","F"),labels=c("Male", "Female"))
+leuk$fab = as.factor(leuk$fab)
+label(leuk$sex) = "Sex"
+label(leuk$age) = "Age"
+label(leuk$karn) = "Karnofsky score (0-100)"
+label(leuk$wbc) = "Baseline white blood cells"
+units(leuk$wbc) = "1000/mm^3"
+label(leuk$plt) = "Baseline platelets"
+units(leuk$plt) = "1000/mm^3"
+label(leuk$hgb) = "Baseline hemoglobin"
+units(leuk$hgb) = "g/dl"
+label(leuk$fab) = "FAB classification of AML subtype  (1 - 6)"
+table1(~sex+age+karn+wbc+plt+hgb+fab|tx, data = leuk)
+```
+
+###Question 2  
+
+```{r q2}
+#Question 2 Table
+label(leuk$cr) = "Complete Remission"
+table1(~cr|sex*tx, data =leuk)
+```
+
+###Question 3 
+In order to do the unadjusted analysis, we will calculate the Odds Ratio, Relative Risk, Risk Difference:
+Based on the previous table from Question 2, we have
+Odds Ratio (calculated by logistic regression):
+```{r q3.1}
+#Question 3 Logistic Regression
+leuk$cr01 = 1
+leuk$cr01[which(leuk$cr == "No")] = 0
+log = glm(cr01~tx , family = binomial, data = leuk)
+kable(summary(log)$coefficients)
+```
+
+OR = $\frac{51/14}{38/27} = 2.588 = e^{0.951}$
+
+According to the calculation, we estimated that the odds of individuals who take idarubicin will have complete remission is 1.588 times higher than the odds of people who take daunorubicin.Treatment is statistically significant at the level of 0.05. 
+
+
+Relative Risk:
+```{r q3.2}
+#Question 3 Relative Risk
+rr = glm(cr01~tx, family = poisson(link = "log"), data = leuk)
+kable(summary(rr)$coefficients)
+```
+
+RR = $\frac{51/65}{38/65} = 1.342 = e^{0.294}$
+
+According to the calculation, we estimated that individuals who take idarubicin are 34.2% more likely to have complete remission than the odds of people who take daunorubicin. Treatment is not statistically significant at the level of 0.05.
+
+
+Risk Difference:
+
+```{r q3.3}
+#Question 3 Risk Difference
+rd = glm(cr01~tx, family = binomial(link = "identity"), data = leuk)
+kable(summary(rd)$coefficients)
+```
+RD = 51/65 - 38/65  = 0.2
+
+According to the calculation, we estimated that individuals who take idarubicin will have 20 additional cases of complete remission per 100 people compared to people who take daunorubicin.Treatment is statistically significant at the level of 0.05. 
+
+
+I think AML patients should be most interested in Odds Ratio. Relative Risk could vary greatly due to the variation among baseline risks and have some limitation, and Odds Ratio does not have this limitation. 
+
+###Question 4 
+
+I don't think sex is a confounder in this study. Based on the definition, confounder must be associated with the treatment group(E). However, in this study, participants are randomly assigned to the different treatment groups and have no association with sex. Therefore, I think the analysis of treatment effect is not potentially confounded by sex. 
+
+###Question 5
+
+In order to do the unadjusted analysis, we will calculate the Odds Ratio, Relative Risk, Risk Difference:
+Based on the previous table from Question 2, we have
+Odds Ratio (calculated by logistic regression):
+```{r q5.1}
+#Question 5 Logistic Regression
+log = glm(cr01~tx + sex , family = binomial, data = leuk)
+kable(summary(log)$coefficients)
+```
+
+OR = $e^{0.921} = 2.511$
+
+According to the calculation, we estimated that for people who have same sex, the odds of individual who take idarubicin will have complete remission is 1.511 times higher than the odds of individual who take daunorubicin.Treatment is statistically significant at the level of 0.05. 
+
+
+Relative Risk:
+```{r q5.2}
+#Question 5 Relative Risk
+rr = glm(cr01~tx+sex, family = poisson(link = "log"), data = leuk)
+kable(summary(rr)$coefficients)
+```
+
+RR = $e^{0.273} = 1.314$
+
+According to the calculation, we estimated that for people who have same sex, individuals who take idarubicin are 31.4% more likely to have complete remission than people who take daunorubicin. Treatment is not statistically significant at the level of 0.05.
+
+
+Risk Difference:
+
+```{r q5.3}
+#Question 5 Risk Difference
+rd = glm(cr01~tx+sex, family = binomial(link = "identity"), data = leuk)
+kable(summary(rd)$coefficients)
+```
+RD = 0.181
+
+According to the calculation, we estimated that for people who have same sex, individuals who take idarubicin will have 18.1 additional cases of complete remission per 100 people compared to people who take daunorubicin.Treatment is statistically significant at the level of 0.05. 
+
+Based on the previous calculation, we estimate that, inside population who have same sex, idarubicin has benefit of complete remission over daunorubicn among male. 
+
+###Question 6
+In order to do the analysis among male population, we will calculate the Odds Ratio, Relative Risk, Risk Difference:
+Based on the previous table from Question 2, we have
+Odds Ratio (calculated by logistic regression):
+```{r q6.1}
+#Question 6 Logistic Regression
+male = leuk[which(leuk$sex == "Male"),]
+log = glm(cr01~tx , family = binomial, data = male)
+kable(summary(log)$coefficients)
+```
+
+OR = $\frac{21/9}{17/18} = 2.471 = e^{0.904}$
+
+According to the calculation, we estimated that the odds of male who take idarubicin will have complete remission is 1.471 times higher than male who take daunorubicin.Treatment is statistically significant at the level of 0.05. 
+
+
+Relative Risk:
+```{r q6.2}
+#Question 6 Relative Risk
+rr = glm(cr01~tx, family = poisson(link = "log"), data = male)
+kable(summary(rr)$coefficients)
+```
+
+RR = $\frac{21/30}{17/35} = 1.441 = e^{0.365}$
+
+According to the calculation, we estimated that male who take idarubicin are 44.1% more likely to have complete remission than the odds of people who take daunorubicin. Treatment is not statistically significant at the level of 0.05.
+
+
+Risk Difference:
+
+```{r q6.3}
+#Question 6 Risk Difference
+rd = glm(cr01~tx, family = binomial(link = "identity"), data = male)
+kable(summary(rd)$coefficients)
+```
+RD = 21/30 - 17/35  = 0.214
+
+According to the calculation, we estimated that male who take idarubicin will have 21.4 additional cases of complete remission per 100 male compared to male who take daunorubicin.Treatment is not statistically significant at the level of 0.05.
+
+Based on the previous calculation, we estimate that idarubicin has benefit of complete remission over daunorubicn among male. 
+
+###Question 7
+In order to do the analysis among female population, we will calculate the Odds Ratio, Relative Risk, Risk Difference:
+Based on the previous table from Question 2, we have
+Odds Ratio (calculated by logistic regression):
+```{r q7.1}
+#Question 7 Logistic Regression
+female = leuk[which(leuk$sex == "Female"),]
+log = glm(cr01~tx , family = binomial, data = female)
+kable(summary(log)$coefficients)
+```
+
+OR = $\frac{30/5}{21/9} = 2.571 = e^{0.944}$
+
+According to the calculation, we estimated that the odds of female who take idarubicin will have complete remission is 1.571 times higher than the odds of female who take daunorubicin.Treatment is not statistically significant at the level of 0.05. 
+
+
+Relative Risk:
+```{r q7.2}
+#Question 7 Relative Risk
+rr = glm(cr01~tx, family = poisson(link = "log"), data = female)
+kable(summary(rr)$coefficients)
+```
+
+RR = $\frac{30/35}{21/30} = 1.224 = e^{0.203}$
+
+According to the calculation, we estimated that female who take idarubicin are 22.4% more likely to have complete remission than female who take daunorubicin. Treatment is not statistically significant at the level of 0.05.
+
+
+Risk Difference:
+
+```{r q7.3}
+#Question 7 Risk Difference
+rd = glm(cr01~tx, family = binomial(link = "identity"), data = female)
+kable(summary(rd)$coefficients)
+```
+RD = 30/35 - 21/30  = 0.157
+
+According to the calculation, we estimated that female who take idarubicin will have 15.7 additional cases of complete remission per 100 female compared to female who take daunorubicin.Treatment is not statistically significant at the level of 0.05. 
+
+Based on the previous calculation, we estimate that idarubicin has benefit of complete remission over daunorubicn among female. 
+
+
+###Question 8
+
+(a) $PAR = \frac{P[E] \times (RR-1)}{P[E]RR + 1 - P[E]}$
+
+(b) $PAR = \frac{0.35 \times (22-1)}{0.35 \times 22 + 1 -0.35} = 0.880$
+
+In the population, 88.0% of the overall risk of lung cancer death is due to smoking. 
+
+(c) $PAR = \frac{0.05 \times (22-1)}{0.05 \times 22 + 1 -0.05} = 0.512$
+
+In the population, 51.2% of the overall risk of lung cancer death is due to smoking.
+
